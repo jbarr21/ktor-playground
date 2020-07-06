@@ -1,0 +1,6 @@
+{
+  "name": "jbarr21-kotlin",
+  "description": "A barebones Kotlin app, which can easily be deployed to Heroku.",
+  "image": "heroku/java",
+  "addons": [ "heroku-postgresql" ]
+}
