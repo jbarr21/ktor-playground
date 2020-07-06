@@ -32,7 +32,7 @@ kotlin {
     }
 }
 
-mainClassName = 'io.ktor.server.netty.EngineMain'
+mainClassName = 'io.github.jbarr21.kotlin.MainKt'
 shadowJar {
     manifest {
         attributes 'Main-Class': mainClassName
