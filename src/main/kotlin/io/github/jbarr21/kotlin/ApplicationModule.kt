@@ -13,15 +13,6 @@ object ApplicationModule {
 
   @JvmStatic
   @Provides
-  fun covidService(): CovidService {
-    return Retrofit.Builder()
-      .baseUrl(CovidManager.COVID_REPORT_URL)
-      .build()
-      .create(CovidService::class.java)
-  }
-
-  @JvmStatic
-  @Provides
   fun moshi(): Moshi {
     return Moshi.Builder()
       .add(KotlinJsonAdapterFactory())

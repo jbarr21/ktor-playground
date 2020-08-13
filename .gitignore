@@ -37,7 +37,9 @@
 .idea/jarRepositories.xml
 .idea/modules.xml
 .idea/*.iml
+.idea/misc.xml
 .idea/modules
+.idea/thriftCompiler.xml
 *.iml
 *.ipr
 

@@ -12,17 +12,16 @@ class CovidManager @Inject constructor(
   private val moshi: Moshi
 ) {
 
-  suspend fun getNewCovidCases(): String {
+  suspend fun getNewCovidCases(): CovidResponse {
     val isLatestDateToday = covidService.getCasesCsvExistence(Instant.now().asString()).isSuccessful
     val latestDate = Instant.now().let { if (isLatestDateToday) it else it.minus(Duration.ofDays(1)) }
     val ydayDate = latestDate.minus(Duration.ofDays(1))
     val newConfirmedCases = covidConfirmedCases(latestDate) - covidConfirmedCases(ydayDate)
-    val response = CovidResponse(
+    return CovidResponse(
       cases = newConfirmedCases,
       country = "US",
       date = latestDate.asString()
     )
-    return moshi.adapter(CovidResponse::class.java).indent("  ").toJson(response)
   }
 
   private suspend fun covidConfirmedCases(date: Instant): Long {
