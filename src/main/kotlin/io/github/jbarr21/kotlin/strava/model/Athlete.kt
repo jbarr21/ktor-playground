@@ -1,4 +1,4 @@
-package io.github.jbarr21.kotlin.strava
+package io.github.jbarr21.kotlin.strava.model
 
 import com.squareup.moshi.JsonClass
 
@@ -16,7 +16,7 @@ data class Athlete(
   val premium: Boolean,
   val profile: String?,
   val profile_medium: String?,
-  val resource_state: Long,
+  val resource_state: Int,
   val sex: String?,
   val state: String?,
   val summit: Boolean,

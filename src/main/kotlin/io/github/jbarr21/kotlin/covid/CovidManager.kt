@@ -1,6 +1,5 @@
 package io.github.jbarr21.kotlin.covid
 
-import com.squareup.moshi.Moshi
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -8,8 +7,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class CovidManager @Inject constructor(
-  private val covidService: CovidService,
-  private val moshi: Moshi
+  private val covidService: CovidService
 ) {
 
   suspend fun getNewCovidCases(): CovidResponse {

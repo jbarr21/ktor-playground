@@ -1,8 +1,9 @@
 package io.github.jbarr21.kotlin
 
 import com.ryanharter.ktor.moshi.moshi
-import io.github.jbarr21.kotlin.strava.Athlete
-import io.github.jbarr21.kotlin.strava.StravaSession
+import freemarker.cache.ClassTemplateLoader
+import io.github.jbarr21.kotlin.strava.model.Athlete
+import io.github.jbarr21.kotlin.strava.model.StravaSession
 import io.github.jbarr21.kotlin.util.MoshiSessionSerializer
 import io.github.jbarr21.kotlin.util.Response
 import io.ktor.application.Application
@@ -13,7 +14,8 @@ import io.ktor.auth.*
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.features.*
-import io.ktor.html.respondHtml
+import io.ktor.freemarker.FreeMarker
+import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.header
@@ -26,7 +28,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.sessions.*
 import io.ktor.util.hex
-import kotlinx.html.*
 import org.slf4j.event.Level
 import redirectUrl
 
@@ -36,12 +37,15 @@ private val applicationComponent by lazy { DaggerApplicationComponent.create() }
 
 fun main(args: Array<String>) {
   val port = System.getenv()["PORT"]?.toInt() ?: 8080
-  embeddedServer(Netty, port = port) {
-    module()
-  }.start(wait = true)
+  embeddedServer(
+    Netty,
+    watchPaths = listOf("build"),
+    port = port,
+    module = Application::mainModule
+  ).start(wait = true)
 }
 
-private fun Application.module() {
+fun Application.mainModule() {
   install(DefaultHeaders)
   install(CallLogging) {
     level = Level.DEBUG
@@ -68,6 +72,9 @@ private fun Application.module() {
       urlProvider = { redirectUrl("/strava/login") }
     }
   }
+  install(FreeMarker) {
+    templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
+  }
   routing {
     get("/") {
       call.respondText("Hello World!", ContentType.Text.Plain)
@@ -84,7 +91,6 @@ private fun Application.module() {
     authenticate(STRAVA_OAUTH) {
       get("/strava/login") {
         val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>() ?: error("No principal")
-        println(principal.extraParameters["athlete"].orEmpty())
 
         applicationComponent.moshi()
           .adapter(Athlete::class.java)
@@ -104,24 +110,32 @@ private fun Application.module() {
 }
 
 private suspend fun ApplicationCall.stravaMainPage() {
-  val session = sessions.get<StravaSession>()
-  respondHtml {
-    head {
-      title { +"Strava Stats Visualizer" }
-    }
-    body {
-      h1 { +"Welcome ${session?.athlete?.name.orEmpty()}" }
-      if (session != null) {
-        img(src = session.athlete.profile.orEmpty())
-        p {
-          a(href = "/strava/logout") { +"Logout" }
-        }
-      } else {
-        p { +"Click below to login!" }
-        a(href = "/strava/login") { +"Login" }
-      }
-    }
+  sessions.get<StravaSession>()?.let {
+    val activityCount = 0 //applicationComponent.stravaManager().getActivities(it.accessToken)
+    val props = MainProps(it.athlete.name, it.athlete.profile.orEmpty(), activityCount)
+    respond(FreeMarkerContent("main.ftl", mapOf("props" to props)))
+  } ?: respond(FreeMarkerContent("login.ftl", null))
+}
+
+data class MainProps(
+  val name: String,
+  val profileImage: String,
+  val activityCount: Int,
+  val activities: List<ActivityProps> = FAKE_ACTIVITIES
+) {
+  companion object {
+    private val FAKE_ACTIVITIES = listOf(
+      ActivityProps("Point Richmond", 35.93, 571.0, 15.4, 103),
+      ActivityProps("San Rafael", 50.31, 1076.0, 12.6, 73),
+      ActivityProps("Bay Ridge Trail", 25.0, 279.0, 13.9, 79)
+    )
   }
 }
 
-
+data class ActivityProps(
+  val name: String,
+  val distance: Double,
+  val elevation: Double,
+  val speed: Double,
+  val power: Int
+)
