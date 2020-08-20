@@ -1,0 +1,7 @@
+{% extends "base.peb" %}
+
+{% block content %}
+
+  {% include "activity-table.peb" %}
+
+{% endblock %}

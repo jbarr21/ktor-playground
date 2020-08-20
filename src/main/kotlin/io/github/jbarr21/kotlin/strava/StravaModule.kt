@@ -9,11 +9,13 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import javax.inject.Singleton
 
 @Module
 object StravaModule {
 
   @JvmStatic
+  @Singleton
   @Provides
   fun stravaOAuth2ServerSettings(): OAuthServerSettings.OAuth2ServerSettings {
     return OAuthServerSettings.OAuth2ServerSettings(
@@ -29,6 +31,7 @@ object StravaModule {
   }
 
   @JvmStatic
+  @Singleton
   @Provides
   fun serviceService(okHttpClient: OkHttpClient): StravaService {
     return Retrofit.Builder()

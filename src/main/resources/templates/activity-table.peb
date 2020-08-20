@@ -1,0 +1,26 @@
+<div class="mdl-grid">
+  <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+    <thead>
+    <tr>
+      <th class="mdl-data-table__cell--non-numeric">Name</th>
+      <th class="mdl-data-table__cell--non-numeric">Start Time</th>
+      <th>Distance (mi)</th>
+      <th>Elevation (ft)</th>
+      <th>Speed (mph)</th>
+      <th>Power (W)</th>
+    </tr>
+    </thead>
+    <tbody>
+      {% for activity in props.activities %}
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">{{ activity.name }}</td>
+          <td class="mdl-data-table__cell--non-numeric">{{ activity.startTime }}</td>
+          <td>{{ activity.distance | numberformat("0.0") }}</td>
+          <td>{{ activity.elevation | numberformat("0") }}</td>
+          <td>{{ activity.speed | numberformat("0.0") }}</td>
+          <td>{{ activity.power | numberformat("0") }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

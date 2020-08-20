@@ -22,7 +22,8 @@ interface StravaService {
   suspend fun getActivities(
     @HeaderMap headers: Map<String, String>,
     @Query("per_page") perPage: Int = 100,
-    @Query("page") pageNum: Int = 1
+    @Query("page") pageNum: Int = 1,
+    @Query("after") afterTimestamp: Long = 0L
   ): Response<List<Activity>>
 
   @GET("activities/{activityId}")

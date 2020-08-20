@@ -1,7 +1,6 @@
-import io.ktor.application.ApplicationCall
-import io.ktor.features.origin
-import io.ktor.request.host
-import io.ktor.request.port
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.request.*
 
 fun ApplicationCall.redirectUrl(path: String): String {
   val defaultPort = if (request.origin.scheme == "http") 80 else 443

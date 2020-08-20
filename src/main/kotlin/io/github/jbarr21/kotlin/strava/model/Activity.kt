@@ -1,6 +1,8 @@
 package io.github.jbarr21.kotlin.strava.model
 
 import com.squareup.moshi.JsonClass
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 @JsonClass(generateAdapter = true)
 data class Activity(
@@ -9,17 +11,17 @@ data class Activity(
   val athlete_count: Int,
   val average_cadence: Double?,
   val average_heartrate: Double?,
-  val average_speed: Double,
+  val average_speed: MetersPerSec,
   val average_temp: Double?,
   val average_watts: Double?,
   val comment_count: Int,
   val commute: Boolean,
   val device_watts: Boolean?,
   val display_hide_heartrate_option: Boolean,
-  val distance: Double,
-  val elapsed_time: Long,
-  val elev_high: Double?,
-  val elev_low: Double?,
+  val distance: Meters,
+  val elapsed_time: Seconds,
+  val elev_high: Meters?,
+  val elev_low: Meters?,
   val end_latlng: List<Double>?,
   val external_id: String?,
   val flagged: Boolean,
@@ -38,7 +40,7 @@ data class Activity(
   val map: Map,
   val max_heartrate: Double?,
   val max_speed: Double,
-  val moving_time: Long,
+  val moving_time: Seconds,
   val name: String,
   val photo_count: Int,
   val pr_count: Int,
@@ -51,7 +53,7 @@ data class Activity(
   val start_longitude: Double?,
   val suffer_score: Double?,
   val timezone: String,
-  val total_elevation_gain: Double,
+  val total_elevation_gain: Meters,
   val total_photo_count: Int,
   val trainer: Boolean,
   val type: String,
@@ -60,4 +62,6 @@ data class Activity(
   val utc_offset: Long,
   val visibility: String,
   val workout_type: Int?
-)
+) {
+  val timestampUtc = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(start_date)).epochSecond
+}

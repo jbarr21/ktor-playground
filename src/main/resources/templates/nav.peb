@@ -1,0 +1,5 @@
+<a class="mdl-navigation__link" href="/strava">Activities</a>
+<a class="mdl-navigation__link" href="/strava/charts">Charts</a>
+<a class="mdl-navigation__link" href="/strava/profile">Profile</a>
+<a class="mdl-navigation__link" href="/strava/settings">Settings</a>
+<a class="mdl-navigation__link" href="/strava/logout">Logout</a>

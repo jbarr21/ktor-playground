@@ -1,0 +1,12 @@
+{% extends "base.peb" %}
+
+{% block content %}
+
+  <center>
+    <br/>
+    <p>
+      {{ pageName }} page
+    </p>
+  </center>
+
+{% endblock %}
