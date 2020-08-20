@@ -4,13 +4,12 @@ import io.github.jbarr21.kotlin.strava.model.toFeet
 import io.github.jbarr21.kotlin.strava.model.toMiles
 import io.github.jbarr21.kotlin.strava.model.toMph
 import io.github.jbarr21.kotlin.strava.prop.ActivityProps
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 
 // API to ViewModel
 fun Activity.toProp() = ActivityProps(
   id,
+  athlete.id,
   timestampUtc,
   name,
   distance.toMiles(),
@@ -23,6 +22,7 @@ fun Activity.toProp() = ActivityProps(
 fun ActivityProps.insertIntoDb() = this.let { activityProp ->
   Activities.insert {
     it[id] = activityProp.id
+    it[athleteId] = activityProp.athleteId
     it[timestamp] = activityProp.timestampUtc
     it[name] = activityProp.name
     it[distance] = activityProp.distance
@@ -33,12 +33,13 @@ fun ActivityProps.insertIntoDb() = this.let { activityProp ->
 }
 
 // DB to ViewModel
-fun Activities.fetchFromDb(): List<ActivityProps> {
-  return Activities.selectAll()
+fun Activities.fetchFromDb(idForAthlete: Long): List<ActivityProps> {
+  return Activities.select { Activities.athleteId eq idForAthlete }
     .orderBy(Activities.timestamp, SortOrder.DESC)
     .map {
       ActivityProps(
         it[id],
+        it[athleteId],
         it[timestamp],
         it[name],
         it[distance],

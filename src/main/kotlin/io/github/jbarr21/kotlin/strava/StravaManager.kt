@@ -16,6 +16,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.sessions.*
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import toProp
 import javax.inject.Inject
@@ -39,14 +40,15 @@ class StravaManager @Inject constructor(
     val activityProps = if (Config.USE_FAKE_STRAVA_DATA) {
       FAKE_ACTIVITIES
     } else {
+      val athleteId = session.athlete.id
       val activities = transaction {
         if (Config.LOGGING_ENABLED) {
           addLogger(StdOutSqlLogger)
         }
         SchemaUtils.create(Activities)
-        Activities.fetchFromDb()
+        Activities.fetchFromDb(session.athlete.id)
       }
-      fetchNewActivities(session.accessToken)
+      fetchNewActivities(athleteId, session.accessToken)
       activities
     }
 
@@ -54,16 +56,23 @@ class StravaManager @Inject constructor(
     respond(PebbleContent("main.peb", mapOf("props" to props)))
   }
 
-  private suspend fun fetchNewActivities(accessToken: String) {
+  private suspend fun fetchNewActivities(athleteId: Long, accessToken: String) {
     val maxTimestamp = transaction<Long> {
-      Activities.slice(Activities.timestamp.max()).selectAll().firstOrNull()?.getOrNull(Activities.timestamp.max()) ?: 0L
+      Activities.slice(Activities.timestamp.max())
+        .select { Activities.athleteId eq athleteId }
+        .firstOrNull()
+        ?.getOrNull(Activities.timestamp.max())
+        ?: 0L
     }
 
-    val activityProps = fetchActivitiesFromApi(accessToken, after = maxTimestamp)
+    fetchActivitiesFromApi(accessToken, after = maxTimestamp)
       .map { it.toProp() }
       .sortedByDescending { it.timestampUtc }
-
-    cacheActivities(activityProps)
+      .also {
+        transaction {
+          it.forEach { it.insertIntoDb() }
+        }
+      }
   }
 
   private suspend fun fetchActivitiesFromApi(accessToken: String, after: Long = 0): List<Activity> {
@@ -77,10 +86,6 @@ class StravaManager @Inject constructor(
     return activities
   }
 
-  private fun cacheActivities(activityProps: List<ActivityProps>) = transaction {
-    activityProps.forEach { it.insertIntoDb() }
-  }
-
   private fun headerMap(accessToken: String) = mapOf(
     "Accept" to "application/json",
     "Authorization" to "Bearer $accessToken"
@@ -89,9 +94,9 @@ class StravaManager @Inject constructor(
   companion object {
     const val STRAVA_OAUTH = "strava-oauth"
     private val FAKE_ACTIVITIES = listOf(
-      ActivityProps(3, 1597876396, "Point Richmond", 35.93, 571.0, 15.4, 103.0),
-      ActivityProps(2, 1586866295, "San Rafael", 50.31, 1076.0, 12.6, 73.0),
-      ActivityProps(1, 1575856194, "Bay Ridge Trail", 25.0, 279.0, 13.9, 79.0)
+      ActivityProps(3, 5678905, 1597876396, "Point Richmond", 35.93, 571.0, 15.4, 103.0),
+      ActivityProps(2, 5678905, 1586866295, "San Rafael", 50.31, 1076.0, 12.6, 73.0),
+      ActivityProps(1, 5678905, 1575856194, "Bay Ridge Trail", 25.0, 279.0, 13.9, 79.0)
     )
 
     fun Route.redirectUnauthenticatedStravaRoutes() = intercept(ApplicationCallPipeline.Setup) {

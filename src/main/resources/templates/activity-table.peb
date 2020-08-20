@@ -12,7 +12,7 @@
     </thead>
     <tbody>
       {% for activity in props.activities %}
-        <tr>
+        <tr onclick="viewStravaActivity({{ activity.id }})">
           <td class="mdl-data-table__cell--non-numeric">{{ activity.name }}</td>
           <td class="mdl-data-table__cell--non-numeric">{{ activity.startTime }}</td>
           <td>{{ activity.distance | numberformat("0.0") }}</td>
@@ -23,4 +23,9 @@
       {% endfor %}
     </tbody>
   </table>
+  <script>
+    function viewStravaActivity(activityId) {
+      window.location = `https://www.strava.com/activities/${activityId}`;
+    }
+  </script>
 </div>
